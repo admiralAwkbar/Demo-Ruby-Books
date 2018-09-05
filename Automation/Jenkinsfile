@@ -47,10 +47,32 @@ node("master")
     usernameVariable: 'USERNAME',
     passwordVariable: 'PASSWORD']])
   {
-    sh 'whoami'
-    sh 'echo uname=$USERNAME pwd=$PASSWORD'
     // Clone the repo
     git url: "git@github.michaeljohnson.io:demo/Ruby-Books.git", branch: "${branch}"
+  }
+  
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Build Ruby Stage
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  stage("BundleInstall")
+  {
+    sh "echo '#########################################'"
+    sh "echo 'Running Bundle Install'"
+    sh "echo '#########################################'"
+
+    try
+    {
+       // run the build
+      sh "chmod +x Automation/create-heroku-app.sh ; ./Automation/create-heroku-app.sh ruby-books"
+    }
+    catch(all)
+    {
+      echo "ERROR encountered during ruby bundle install"
+      throw all
+      foundErrors=1
+    }
   }
 
   /***************************************************************************************************
