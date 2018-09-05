@@ -39,7 +39,7 @@ node("master")
     echo "No Passed Parameter: branch"
     echo "Defaulting to: master"
   }
-  echo branch
+  sh "printenv"
 
   // Clone it down
   withCredentials([[
@@ -54,14 +54,15 @@ node("master")
   
   /***************************************************************************************************
   ****************************************************************************************************
-  * Build Ruby Stage
+  * Deploy to Heroku Stage
   ****************************************************************************************************
   ***************************************************************************************************/
-  if (branch == "master") {
-    stage("DeployToHeroku")
+  if (branch == "master") 
+  {
+    stage("DeployToHerokuProduction")
     {
       sh "echo '#########################################'"
-      sh "echo 'Deploying to Heroku'"
+      sh "echo 'Deploying to Heroku Production'"
       sh "echo '#########################################'"
 
       try
@@ -77,6 +78,28 @@ node("master")
       }
     }
   }
+  else
+  {
+    stage("DeployToHerokuStaging")
+    {
+      sh "echo '#########################################'"
+      sh "echo 'Deploying to Heroku Staging Environment'"
+      sh "echo '#########################################'"
+
+      try
+      {
+         // run the build
+        sh "chmod +x Automation/deploy-pr-to-heroku.sh ; bash ./Automation/deploy-pr-to-heroku.sh demo ruby-books ${branch}"
+      }
+      catch(all)
+      {
+        echo "ERROR encountered during heroku deployment"
+        throw all
+        foundErrors=1
+      }
+    }  
+  }
+ 
 
   /***************************************************************************************************
   ****************************************************************************************************
