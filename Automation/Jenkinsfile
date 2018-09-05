@@ -7,145 +7,138 @@
 
 ***************************************************************************************************/
 ///////////////////////////////////// START OF PIPELINE ////////////////////////////////////////////
-node("agent-ruby")
+node("hubot")
 {
-	//clean the workspace
-   cleanWs()
+  //clean the workspace
+  cleanWs()
 
-	// Globals
-	def payload
-	def masterJobNumber
-	def gitFlowInfo
-	// Found errors
-   def foundErrors='0'
-
-   def branch
-	    // Need to get the branch of code we need
-	    try
-	    {
-
-
-	        // Grab Branch from ENV
-	        branch = env.BRANCH_NAME
-	        if (branch == null || branch == "null")
-		    {
-	            // Set to master if not passed
-	            branch = "master"
-	            echo "No Passed Parameter: branch"
-	            echo "Defaulting to: master"
-	        }
-	    }
-	    catch(all)
-	    {
-	        branch = "master"
-	        echo "No Passed Parameter: branch"
-	        echo "Defaulting to: master"
-	    }
-
-	// Clone it down
-	withCredentials([[
-		$class: 'UsernamePasswordMultiBinding',
-		credentialsId: 'awkbar-api',
-		usernameVariable: 'USERNAME',
-		passwordVariable: 'PASSWORD'
-   ]])
-	{
-		//sh 'echo uname=$USERNAME pwd=$PASSWORD'
-
-		// Clone the repo
-		git url: "https://$PASSWORD@github.com/github-services-engineering/NEW_REPOSITORY_NAME", branch: "${branch}"
-	}
-
-
-	/***************************************************************************************************
-	****************************************************************************************************
-	* Build Ruby Stage
-	****************************************************************************************************
-	***************************************************************************************************/
-  	stage("BundleInstall")
-  	{
-		sh "echo '#########################################'"
-	   sh "echo 'Running Bundle Install'"
-		sh "echo '#########################################'"
-
-      try
-	   {
-         // run the build
-	    	sh "chmod +x Automation/bundle-install.sh ; ./Automation/bundle-install.sh"
-	   }
-	   catch(all)
-	   {
-			echo "ERROR encountered during ruby bundle install"
-		   throw all
-         foundErrors=1
-	   }
-  	}
-
-
-   /***************************************************************************************************
-	****************************************************************************************************
-	* Generate and Configure DB Stage
-	****************************************************************************************************
-	***************************************************************************************************/
-  	stage("Generate And Configure DB")
-  	{
-		sh "echo '#########################################'"
-	   sh "echo 'Generating and configuring Postgres DB'"
-		sh "echo '#########################################'"
-
-      try
-	   {
-         // run the build
-	    	sh "chmod +x Automation/configure-install-db.sh ; ./Automation/configure-install-db.sh"
-	   }
-	   catch(all)
-	   {
-			echo "ERROR encountered during ruby db config"
-		   throw all
-         foundErrors=1
-	   }
-  	}
-
-
-   /***************************************************************************************************
-	****************************************************************************************************
-	* Run RSPEC Stage
-	****************************************************************************************************
-	***************************************************************************************************/
-  	stage("Run RSPEC")
-  	{
-		sh "echo '#########################################'"
-	   sh "echo 'Running Ruby RSPEC'"
-		sh "echo '#########################################'"
-
-      try
-	   {
-         // run the build
-	    	sh "chmod +x Automation/run-rspec.sh ; ./Automation/run-rspec.sh"
-	   }
-	   catch(all)
-	   {
-			echo "ERROR encountered during ruby rspec"
-		   throw all
-         foundErrors=1
-	   }
-  	}
-
-
-    /***************************************************************************************************
-    ****************************************************************************************************
-	 * Validate if errors found
-    ****************************************************************************************************
-	 ***************************************************************************************************/
-    if(foundErrors=='1')
+  // Globals
+  def payload
+  def masterJobNumber
+  def gitFlowInfo
+  // Found errors
+  def foundErrors='0'
+  def branch
+  
+  // Need to get the branch of code we need
+  try
+  {
+    // Grab Branch from ENV
+    branch = env.BRANCH_NAME
+    if (branch == null || branch == "null")
     {
-		    sh "echo 'ERROR! Failed to Build Ruby App' && exit 911"
+      // Set to master if not passed
+      branch = "master"
+      echo "No Passed Parameter: branch"
+      echo "Defaulting to: master"
     }
-	/***************************************************************************************************
-	****************************************************************************************************
-	* END OF LOOP
-	****************************************************************************************************
-	***************************************************************************************************/
+  }
+  catch(all)
+  {
+    branch = "master"
+    echo "No Passed Parameter: branch"
+    echo "Defaulting to: master"
+  }
+
+  // Clone it down
+  withCredentials([[
+    $class: 'UsernamePasswordMultiBinding',
+    credentialsId: 'awkbar-api',
+    usernameVariable: 'USERNAME',
+    passwordVariable: 'PASSWORD']])
+  {
+    //sh 'echo uname=$USERNAME pwd=$PASSWORD'
+    // Clone the repo
+    git url: "https://$PASSWORD@github.com/github-services-engineering/NEW_REPOSITORY_NAME", branch: "${branch}"
+  }
+
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Build Ruby Stage
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  stage("BundleInstall")
+  {
+    sh "echo '#########################################'"
+    sh "echo 'Running Bundle Install'"
+    sh "echo '#########################################'"
+
+    try
+    {
+       // run the build
+      sh "chmod +x Automation/bundle-install.sh ; ./Automation/bundle-install.sh"
+    }
+    catch(all)
+    {
+      echo "ERROR encountered during ruby bundle install"
+      throw all
+      foundErrors=1
+    }
+  }
+
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Generate and Configure DB Stage
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  stage("Generate And Configure DB")
+  {
+    sh "echo '#########################################'"
+    sh "echo 'Generating and configuring Postgres DB'"
+    sh "echo '#########################################'"
+
+    try
+    {
+      // run the build
+      sh "chmod +x Automation/configure-install-db.sh ; ./Automation/configure-install-db.sh"
+    }
+    catch(all)
+    {
+      echo "ERROR encountered during ruby db config"
+      throw all
+      foundErrors=1
+    }
+  }
+
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Run RSPEC Stage
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  stage("Run RSPEC")
+  {
+    sh "echo '#########################################'"
+    sh "echo 'Running Ruby RSPEC'"
+    sh "echo '#########################################'"
+    
+    try
+    {
+      // run the build
+      sh "chmod +x Automation/run-rspec.sh ; ./Automation/run-rspec.sh"
+    }
+    catch(all)
+    {
+      echo "ERROR encountered during ruby rspec"
+      throw all
+      foundErrors=1
+    }
+  }
+
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * Validate if errors found
+  ****************************************************************************************************
+  ***************************************************************************************************/
+  if(foundErrors=='1')
+  {
+    sh "echo 'ERROR! Failed to Build Ruby App' && exit 911"
+  }
+  
+  /***************************************************************************************************
+  ****************************************************************************************************
+  * END OF LOOP
+  ****************************************************************************************************
+  ***************************************************************************************************/
 }
 /***************************************************************************************************
 ****************************************************************************************************
@@ -157,25 +150,25 @@ node("agent-ruby")
 @NonCPS
 def parseText(jsonpayload)
 {
-  	jp = new groovy.json.JsonSlurper().parseText(jsonpayload)
-  	gfi = new GitFlowInfo()
-  	gfi.prUrl=jp.payload.pr_url;
-  	gfi.prNumber=jp.payload.pr;
-  	gfi.gitHeadUrl=jp.payload.head;
-  	gfi.gitBaseUrl=jp.payload.base;
-   gfi.gitbefore=jp.payload.before;
-   gfi.gitafter=jp.payload.after;
-  	gfi.gitRepository=jp.payload.repository;
-  	jp=null
-  	return gfi
+  jp = new groovy.json.JsonSlurper().parseText(jsonpayload)
+  gfi = new GitFlowInfo()
+  gfi.prUrl=jp.payload.pr_url;
+  gfi.prNumber=jp.payload.pr;
+  gfi.gitHeadUrl=jp.payload.head;
+  gfi.gitBaseUrl=jp.payload.base;
+  gfi.gitbefore=jp.payload.before;
+  gfi.gitafter=jp.payload.after;
+  gfi.gitRepository=jp.payload.repository;
+  jp=null
+  return gfi
 }
 
 // GIT Information for flowdock labels
 class GitFlowInfo implements Serializable
 {
-  	String prUrl;
-  	String prNumber;
-  	String gitHeadUrl;
-  	String gitBaseUrl;
-  	String gitRepository;
+  String prUrl;
+  String prNumber;
+  String gitHeadUrl;
+  String gitBaseUrl;
+  String gitRepository;
 }
