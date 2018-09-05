@@ -25,6 +25,8 @@ node("master")
   {
     // Grab Branch from ENV
     branch = env.CHANGE_BRANCH
+    echo "********** BRANCH: ***********"
+    echo branch
     if (branch == null || branch == "null")
     {
       // Set to master if not passed
