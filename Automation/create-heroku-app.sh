@@ -11,8 +11,8 @@ done <<< "${existing_apps}"
 
 heroku apps:create migarjo-ruby-books --buildpack https://github.com/heroku/heroku-buildpack-ruby.git
 
-heroku pipelines:create migarjo-ruby-books \
-  --app=migarjo-ruby-books \
+heroku pipelines:create ${app_name} \
+  --app=${app_name} \
   --stage=production
 
 git push heroku master
