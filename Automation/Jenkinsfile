@@ -39,6 +39,7 @@ node("master")
     echo "No Passed Parameter: branch"
     echo "Defaulting to: master"
   }
+  echo branch
 
   // Clone it down
   withCredentials([[
