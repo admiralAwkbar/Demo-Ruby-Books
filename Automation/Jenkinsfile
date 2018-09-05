@@ -24,7 +24,7 @@ node("master")
   try
   {
     // Grab Branch from ENV
-    branch = env.BRANCH_NAME
+    branch = env.CHANGE_BRANCH
     if (branch == null || branch == "null")
     {
       // Set to master if not passed
