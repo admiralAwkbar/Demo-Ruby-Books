@@ -56,22 +56,27 @@ node("master")
   * Build Ruby Stage
   ****************************************************************************************************
   ***************************************************************************************************/
-  stage("BundleInstall")
+  stage("DeployToHeroku")
   {
-    sh "echo '#########################################'"
-    sh "echo 'Running Bundle Install'"
-    sh "echo '#########################################'"
-
-    try
-    {
-       // run the build
-      sh "chmod +x Automation/create-heroku-app.sh ; bash ./Automation/create-heroku-app.sh migarjo-ruby-books"
+    when {
+      branch 'master'
     }
-    catch(all)
-    {
-      echo "ERROR encountered during ruby bundle install"
-      throw all
-      foundErrors=1
+    steps {
+      sh "echo '#########################################'"
+      sh "echo 'Deploying to Heroku'"
+      sh "echo '#########################################'"
+
+      try
+      {
+         // run the build
+        sh "chmod +x Automation/create-heroku-app.sh ; bash ./Automation/create-heroku-app.sh migarjo-ruby-books"
+      }
+      catch(all)
+      {
+        echo "ERROR encountered during heroku deployment"
+        throw all
+        foundErrors=1
+      }
     }
   }
 
