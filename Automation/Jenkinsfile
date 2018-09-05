@@ -47,9 +47,10 @@ node("master")
     usernameVariable: 'USERNAME',
     passwordVariable: 'PASSWORD']])
   {
+    sh 'ruby -v'
     //sh 'echo uname=$USERNAME pwd=$PASSWORD'
     // Clone the repo
-    git url: "https://$PASSWORD@github.com/github-services-engineering/NEW_REPOSITORY_NAME", branch: "${branch}"
+    git url: "https://$PASSWORD@github.michaeljohnson.io/demo/Ruby-Books.git", branch: "${branch}"
   }
 
   /***************************************************************************************************
