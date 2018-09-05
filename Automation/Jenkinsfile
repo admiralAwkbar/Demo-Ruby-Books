@@ -65,7 +65,7 @@ node("master")
     try
     {
        // run the build
-      sh "chmod +x Automation/create-heroku-app.sh ; ./Automation/create-heroku-app.sh migarjo-ruby-books"
+      sh "chmod +x Automation/create-heroku-app.sh ; bash ./Automation/create-heroku-app.sh migarjo-ruby-books"
     }
     catch(all)
     {
