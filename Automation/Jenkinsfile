@@ -43,7 +43,7 @@ node("hubot")
   // Clone it down
   withCredentials([[
     $class: 'UsernamePasswordMultiBinding',
-    credentialsId: 'awkbar-api',
+    credentialsId: 'github-cred',
     usernameVariable: 'USERNAME',
     passwordVariable: 'PASSWORD']])
   {
