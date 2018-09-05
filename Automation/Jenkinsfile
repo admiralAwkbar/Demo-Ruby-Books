@@ -39,10 +39,9 @@ node("master")
     echo "No Passed Parameter: branch"
     echo "Defaulting to: master"
   }
-  sh "printenv"
-  
-  echo "********** BRANCH: ***********"
-  echo branch
+
+  sh "echo ********** BRANCH: ***********
+  sh "echo $branch"
 
   // Clone it down
   withCredentials([[
