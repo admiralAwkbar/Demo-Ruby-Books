@@ -19,7 +19,8 @@ node("master")
   // Found errors
   def foundErrors='0'
   def branch
-  
+  def deployment_id
+
   // Need to get the branch of code we need
   try
   {
@@ -40,37 +41,36 @@ node("master")
     echo "Defaulting to: master"
   }
 
-  sh "echo ********** BRANCH: ***********
+  sh "echo ********** BRANCH: ***********"
   sh "echo $branch"
 
   // Clone it down
   withCredentials([[
     $class: 'UsernamePasswordMultiBinding',
-    credentialsId: 'awkbar-api',
+    credentialsId: 'jenkins-cred',
     usernameVariable: 'USERNAME',
     passwordVariable: 'PASSWORD']])
   {
     // Clone the repo
     git url: "git@github.michaeljohnson.io:demo/Ruby-Books.git", branch: "${branch}"
   }
-  
+
   /***************************************************************************************************
   ****************************************************************************************************
   * Deploy to Heroku Stage
   ****************************************************************************************************
   ***************************************************************************************************/
-  if (branch == "master") 
+  if (branch == "hubot")
   {
     stage("DeployToHerokuProduction")
     {
       sh "echo '#########################################'"
       sh "echo 'Deploying to Heroku Production'"
       sh "echo '#########################################'"
-
       try
       {
          // run the build
-        sh "chmod +x Automation/create-heroku-app.sh ; bash ./Automation/create-heroku-app.sh migarjo-ruby-books"
+        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo Ruby-Books migarjo-ruby-books"
       }
       catch(all)
       {
@@ -82,26 +82,73 @@ node("master")
   }
   else
   {
-    stage("DeployToHerokuStaging")
+    stage("DeployToHerokuReview")
     {
       sh "echo '#########################################'"
-      sh "echo 'Deploying to Heroku Staging Environment'"
+      sh "echo 'Deploying to Heroku Review Environment'"
       sh "echo '#########################################'"
+
+      // Grab PR from ENV
+      pr_number = env.CHANGE_ID
+
+      def createDeploymentBody = """
+      {
+            "ref": "${branch}",
+            "required_contexts":[],
+            "environment": "review"
+      }
+      """
+      def createDeploymentResponse = httpRequest authentication: 'jenkins-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: createDeploymentBody, url: "https://github.michaeljohnson.io/api/v3/repos/demo/Ruby-Books/deployments"
+      echo "Status: ${createDeploymentResponse.status}\nContent: ${createDeploymentResponse.content}"
+
+      def deployment = readJSON text: createDeploymentResponse.content
+      echo "Deployment: ${deployment}"
+      deployment_id = deployment.id
+      echo "ID: ${deployment_id}"
+
+      def deploymentPendingBody = """
+      {
+            "state": "pending",
+            "log_url": "https://dashboard.heroku.com/apps/migarjo-ruby-books-pr-${pr_number}/logs"
+      }
+      """
+      def deploymentPendingResponse = httpRequest authentication: 'jenkins-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentPendingBody, url: "https://github.michaeljohnson.io/api/v3/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
+      echo "Status: ${deploymentPendingResponse.status}\nContent: ${deploymentPendingResponse.content}"
 
       try
       {
-         // run the build
-        sh "chmod +x Automation/deploy-pr-to-heroku.sh ; bash ./Automation/deploy-pr-to-heroku.sh demo ruby-books ${branch}"
+        // run the build
+        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo ruby-books migarjo-ruby-books-pr-${pr_number}"
       }
       catch(all)
       {
         echo "ERROR encountered during heroku deployment"
+
+        def deploymentFailedBody = """
+        {
+              "state": "failure",
+              "log_url": "https://dashboard.heroku.com/apps/migarjo-ruby-books-pr-${pr_number}/logs"
+        }
+        """
+        def deploymentFailureResponse = httpRequest authentication: 'jenkins-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentFailureBody, url: "https://github.michaeljohnson.io/api/v3/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
+        echo "Status: ${deploymentFailureResponse.status}\nContent: ${deploymentFailureResponse.content}"
+
         throw all
         foundErrors=1
       }
-    }  
+
+      def deploymentSuccessBody = """
+      {
+            "state": "success",
+            "log_url": "https://dashboard.heroku.com/apps/migarjo-ruby-books-pr-${pr_number}/logs",
+            "environment_url": "https://migarjo-ruby-books-pr-${pr_number}.herokuapp.com"
+      }
+      """
+      def deploymentSuccessResponse = httpRequest authentication: 'jenkins-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentSuccessBody, url: "https://github.michaeljohnson.io/api/v3/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
+      echo "Status: ${deploymentSuccessResponse.status}\nContent: ${deploymentSuccessResponse.content}"
+    }
   }
- 
+
 
   /***************************************************************************************************
   ****************************************************************************************************
@@ -161,7 +208,7 @@ node("master")
     sh "echo '#########################################'"
     sh "echo 'Running Ruby RSPEC'"
     sh "echo '#########################################'"
-    
+
     try
     {
       // run the build
@@ -184,7 +231,7 @@ node("master")
   {
     sh "echo 'ERROR! Failed to Build Ruby App' && exit 911"
   }
-  
+
   /***************************************************************************************************
   ****************************************************************************************************
   * END OF LOOP
