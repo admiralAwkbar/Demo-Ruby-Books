@@ -47,7 +47,11 @@ node("master")
   // Clone it down
   withCredentials([[
     $class: 'UsernamePasswordMultiBinding',
+<<<<<<< HEAD
     credentialsId: 'jenkins-cred',
+=======
+    credentialsId: 'github-cred',
+>>>>>>> 1c7a173fd7a21d7a6bf549a0d5e8ae4cac96e129
     usernameVariable: 'USERNAME',
     passwordVariable: 'PASSWORD']])
   {
