@@ -12,6 +12,10 @@ node("master")
   //clean the workspace
   cleanWs()
 
+  // Set Variables
+  def domain_name='github.service.consul'
+  def user_name='migarjo'
+
   // Globals
   def payload
   def masterJobNumber
@@ -20,6 +24,12 @@ node("master")
   def foundErrors='0'
   def branch
   def deployment_id
+  def git_url="git@${domain_name}:demo/Ruby-Books.git"
+  def api_url="https://${domain_name}/api/v3"
+  def app_name="${user_name}-ruby-books"
+
+
+
 
   // Need to get the branch of code we need
   try
@@ -47,16 +57,12 @@ node("master")
   // Clone it down
   withCredentials([[
     $class: 'UsernamePasswordMultiBinding',
-<<<<<<< HEAD
-    credentialsId: 'jenkins-cred',
-=======
     credentialsId: 'github-cred',
->>>>>>> 1c7a173fd7a21d7a6bf549a0d5e8ae4cac96e129
     usernameVariable: 'USERNAME',
     passwordVariable: 'PASSWORD']])
   {
     // Clone the repo
-    git url: "git@github.michaeljohnson.io:demo/Ruby-Books.git", branch: "${branch}"
+    git url: "${git_url}", branch: "${branch}"
   }
 
   /***************************************************************************************************
@@ -74,7 +80,7 @@ node("master")
       try
       {
          // run the build
-        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo Ruby-Books migarjo-ruby-books"
+        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo Ruby-Books <YOUR-NAME>-ruby-books"
       }
       catch(all)
       {
@@ -102,7 +108,7 @@ node("master")
             "environment": "review"
       }
       """
-      def createDeploymentResponse = httpRequest authentication: 'jenkins-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: createDeploymentBody, url: "https://github.michaeljohnson.io/api/v3/repos/demo/Ruby-Books/deployments"
+      def createDeploymentResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: createDeploymentBody, url: "${api_url}/repos/demo/Ruby-Books/deployments"
       echo "Status: ${createDeploymentResponse.status}\nContent: ${createDeploymentResponse.content}"
 
       def deployment = readJSON text: createDeploymentResponse.content
@@ -113,16 +119,16 @@ node("master")
       def deploymentPendingBody = """
       {
             "state": "pending",
-            "log_url": "https://dashboard.heroku.com/apps/migarjo-ruby-books-pr-${pr_number}/logs"
+            "log_url": "https://dashboard.heroku.com/apps/<YOUR-NAME>-ruby-books-pr-${pr_number}/logs"
       }
       """
-      def deploymentPendingResponse = httpRequest authentication: 'jenkins-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentPendingBody, url: "https://github.michaeljohnson.io/api/v3/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
+      def deploymentPendingResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentPendingBody, url: "${api_url}/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
       echo "Status: ${deploymentPendingResponse.status}\nContent: ${deploymentPendingResponse.content}"
 
       try
       {
         // run the build
-        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo ruby-books migarjo-ruby-books-pr-${pr_number}"
+        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo ruby-books ${app_name}-pr-${pr_number}"
       }
       catch(all)
       {
@@ -131,10 +137,10 @@ node("master")
         def deploymentFailedBody = """
         {
               "state": "failure",
-              "log_url": "https://dashboard.heroku.com/apps/migarjo-ruby-books-pr-${pr_number}/logs"
+              "log_url": "https://dashboard.heroku.com/apps/${app_name}-pr-${pr_number}/logs"
         }
         """
-        def deploymentFailureResponse = httpRequest authentication: 'jenkins-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentFailureBody, url: "https://github.michaeljohnson.io/api/v3/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
+        def deploymentFailureResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentFailureBody, url: "${api_url}/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
         echo "Status: ${deploymentFailureResponse.status}\nContent: ${deploymentFailureResponse.content}"
 
         throw all
@@ -144,11 +150,11 @@ node("master")
       def deploymentSuccessBody = """
       {
             "state": "success",
-            "log_url": "https://dashboard.heroku.com/apps/migarjo-ruby-books-pr-${pr_number}/logs",
-            "environment_url": "https://migarjo-ruby-books-pr-${pr_number}.herokuapp.com"
+            "log_url": "https://dashboard.heroku.com/apps/${app_name}-pr-${pr_number}/logs",
+            "environment_url": "https://${app_name}-pr-${pr_number}.herokuapp.com"
       }
       """
-      def deploymentSuccessResponse = httpRequest authentication: 'jenkins-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentSuccessBody, url: "https://github.michaeljohnson.io/api/v3/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
+      def deploymentSuccessResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: deploymentSuccessBody, url: "${api_url}/repos/demo/Ruby-Books/deployments/${deployment_id}/statuses"
       echo "Status: ${deploymentSuccessResponse.status}\nContent: ${deploymentSuccessResponse.content}"
     }
   }
