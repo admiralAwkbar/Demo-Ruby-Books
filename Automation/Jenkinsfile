@@ -71,7 +71,7 @@ node("hubot")
       try
       {
          // run the build
-        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo Ruby-Books <YOUR-NAME>-ruby-books"
+        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo Ruby-Books ${app_name}"
       }
       catch(all)
       {
