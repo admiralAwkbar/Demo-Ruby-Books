@@ -4,17 +4,16 @@
 
 /***************************************************************************************************
 * LEGEND:
-
 ***************************************************************************************************/
 ///////////////////////////////////// START OF PIPELINE ////////////////////////////////////////////
-node("master")
+node("hubot")
 {
   //clean the workspace
   cleanWs()
 
   // Set Variables
-  def domain_name='github.service.consul'
-  def user_name='migarjo'
+  def domain_name='<DOMAIN_NAME>'
+  def user_name='<USER_NAME>'
 
   // Globals
   def payload
@@ -24,7 +23,7 @@ node("master")
   def foundErrors='0'
   def branch
   def deployment_id
-  def git_url="git@${domain_name}:demo/Ruby-Books.git"
+  def git_url="${domain_name}/demo/Ruby-Books.git"
   def api_url="https://${domain_name}/api/v3"
   def app_name="${user_name}-ruby-books"
 
@@ -54,16 +53,8 @@ node("master")
   sh "echo ********** BRANCH: ***********"
   sh "echo $branch"
 
-  // Clone it down
-  withCredentials([[
-    $class: 'UsernamePasswordMultiBinding',
-    credentialsId: 'github-cred',
-    usernameVariable: 'USERNAME',
-    passwordVariable: 'PASSWORD']])
-  {
-    // Clone the repo
-    git url: "${git_url}", branch: "${branch}"
-  }
+  // Clone the repo
+  git credentialsId: 'github-cred', url: "https://${git_url}", branch: "${branch}"
 
   /***************************************************************************************************
   ****************************************************************************************************
