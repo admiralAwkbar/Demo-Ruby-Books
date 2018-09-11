@@ -34,7 +34,7 @@ mkdir -p config
 echo 'test:
   database: ruby_test
   adapter: postgresql
-  encoding: SQL_ASCII
+  encoding: UTF8
   username: psuser
   password: password1
   host: localhost
@@ -49,17 +49,17 @@ echo "-------------------------------"
 echo "---- Starting Postrgess DB ----"
 echo "-------------------------------"
 #sed -i 's/local   all             postgres                                peer/local   all             postgres                                md5/g' /etc/postgresql/9.5/main/pg_hba.conf
-service postgresql start
-service postgresql status
+sudo service postgresql start
+sudo service postgresql status
 echo "creating user"
-su - postgres -c "psql -c \"CREATE ROLE psuser WITH LOGIN PASSWORD 'password1';\""
-su - postgres -c "psql -c \"CREATE DATABASE ruby_test OWNER psuser;\""
-su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE ruby_test to psuser;\""
-su - postgres -c "psql -c \"ALTER USER psuser CREATEDB;\""
+sudo su - postgres -c "psql -c \"CREATE ROLE psuser WITH LOGIN PASSWORD 'password1';\""
+sudo su - postgres -c "psql -c \"CREATE DATABASE ruby_test OWNER psuser;\""
+sudo su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE ruby_test to psuser;\""
+sudo su - postgres -c "psql -c \"ALTER USER psuser CREATEDB;\""
 
-service postgresql stop
-service postgresql start
-service postgresql status
+sudo service postgresql stop
+sudo service postgresql start
+sudo service postgresql status
 
 #echo "Cat of file"
 #cat /etc/postgresql/*/main/pg_hba.conf
