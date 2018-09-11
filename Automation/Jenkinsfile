@@ -24,7 +24,7 @@ node("hubot")
   def branch
   def deployment_id
   def git_url="${domain_name}/demo/Ruby-Books.git"
-  def api_url="https://${domain_name}/api/v3"
+  def api_url="${domain_name}/api/v3"
   def app_name="${user_name}-ruby-books"
 
 
@@ -54,7 +54,7 @@ node("hubot")
   sh "echo $branch"
 
   // Clone the repo
-  git credentialsId: 'github-cred', url: "https://${git_url}", branch: "${branch}"
+  git credentialsId: 'github-cred', url: "${git_url}", branch: "${branch}"
 
   /***************************************************************************************************
   ****************************************************************************************************
