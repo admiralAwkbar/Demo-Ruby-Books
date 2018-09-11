@@ -6,7 +6,7 @@
 ######################
 #### Sub Routines ####
 ######################
-function Check_Shell()
+Check_Shell()
 {
    # Check the shells error code when a step has completed
    if [ $? -eq 0 ]; then
