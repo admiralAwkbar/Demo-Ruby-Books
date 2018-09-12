@@ -208,7 +208,7 @@ node("hubot")
       {
         echo "ERROR encountered during heroku deployment"
 
-        def deploymentFailedBody = """
+        def deploymentFailureBody = """
         {
               "state": "failure",
               "log_url": "https://dashboard.heroku.com/apps/${app_name}-pr-${pr_number}/logs"
