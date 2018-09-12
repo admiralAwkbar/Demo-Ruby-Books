@@ -144,7 +144,7 @@ node("hubot")
   * Deploy to Heroku Stage
   ****************************************************************************************************
   ***************************************************************************************************/
-  if (branch == "hubot")
+  if (branch == "master")
   {
     stage("DeployToHerokuProduction")
     {
@@ -154,7 +154,7 @@ node("hubot")
       try
       {
          // run the build
-        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo Ruby-Books ${app_name}"
+        sh "chmod +x Automation/deploy-master-to-heroku.sh ; bash ./Automation/deploy-master-to-heroku.sh demo Ruby-Books ${app_name}"
       }
       catch(all)
       {
@@ -202,7 +202,7 @@ node("hubot")
       try
       {
         // run the build
-        sh "chmod +x Automation/deploy-to-heroku.sh ; bash ./Automation/deploy-to-heroku.sh demo ruby-books ${app_name}-pr-${pr_number}"
+        sh "chmod +x Automation/deploy-review-app-to-heroku.sh ; bash ./Automation/deploy-review-app-to-heroku.sh demo ruby-books ${app_name}-pr-${pr_number}"
       }
       catch(all)
       {
