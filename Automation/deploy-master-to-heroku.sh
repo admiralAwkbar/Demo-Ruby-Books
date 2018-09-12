@@ -10,7 +10,7 @@ existing_apps=$(heroku apps)
 while read -r line; do
   if [[ ${line} == "${app_name}" ]]; then
     echo "Deployment already exists. Adding remote."
-    heroku git:remote --a "${app_name}"
+    heroku git:remote -a "${app_name}"
   fi
 done <<< "${existing_apps}"
 
