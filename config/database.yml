@@ -1,9 +1,18 @@
 test:
-  database: <%= ENV['RDS_DB_NAME'] %>
+  database: ruby_test
   adapter: postgresql
   encoding: UTF8
+  username: psuser
+  password: password1
+  host: localhost
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+production:
+  adapter: postgresql
+  encoding: UTF8
+  database: <%= ENV['RDS_DB_NAME'] %>
   username: <%= ENV['RDS_USERNAME'] %>
   password: <%= ENV['RDS_PASSWORD'] %>
   host: <%= ENV['RDS_HOSTNAME'] %>
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   port: <%= ENV['RDS_PORT'] %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
