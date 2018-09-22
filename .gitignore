@@ -7,6 +7,9 @@
 # Ignore bundler config.
 /.bundle
 
+# Ignore vendor directory
+/vendor
+
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
@@ -15,3 +18,8 @@
 
 # Ignore Byebug command history file.
 .byebug_history
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
