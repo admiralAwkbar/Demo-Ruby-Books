@@ -27,9 +27,6 @@ node("hubot")
   def api_url="${domain_name}/api/v3"
   def app_name="${user_name}-ruby-books"
 
-
-
-
   // Need to get the branch of code we need
   try
   {
@@ -71,10 +68,31 @@ node("hubot")
     {
        // run the build
       sh "chmod +x Automation/bundle-install.sh ; ./Automation/bundle-install.sh"
+      
+      def statusBody = """
+      {
+            "state": "success",
+            "context":"Bundle Install",
+            "target_url": "${build_url}",
+            "description":"Bundle Install Succeeded"
+      }
+      """
+      updateStatus(api_url, statusBody)
     }
     catch(all)
     {
       echo "ERROR encountered during ruby bundle install"
+      
+      def statusBody = """
+      {
+            "state": "failure",
+            "context":"Bundle Install",
+            "target_url": "${build_url}",
+            "description":"ERROR encountered during ruby bundle install"
+      }
+      """
+      updateStatus(api_url, statusBody)
+      
       throw all
       foundErrors=1
     }
@@ -95,10 +113,31 @@ node("hubot")
     {
       // run the build
       sh "chmod +x Automation/configure-install-db.sh ; ./Automation/configure-install-db.sh"
+      
+      def statusBody = """
+      {
+            "state": "success",
+            "context":"DB Config",
+            "target_url": "${build_url}",
+            "description":"DB successfully configured"
+      }
+      """
+      updateStatus(api_url, statusBody)
     }
     catch(all)
     {
       echo "ERROR encountered during ruby db config"
+      
+      def statusBody = """
+      {
+            "state": "failure",
+            "context":"DB Config",
+            "target_url": "${build_url}",
+            "description":"ERROR encountered during ruby db config"
+      }
+      """
+      updateStatus(api_url, statusBody)
+      
       throw all
       foundErrors=1
     }
@@ -119,12 +158,35 @@ node("hubot")
     {
       // run the build
       sh "chmod +x Automation/run-rspec.sh ; ./Automation/run-rspec.sh"
+      
+      def statusBody = """
+      {
+            "state": "success",
+            "context":"RSpec",
+            "target_url": "${build_url}",
+            "description":"RSpec tests passed"
+      }
+      """
+      updateStatus(api_url, statusBody)
     }
     catch(all)
     {
       echo "ERROR encountered during ruby rspec"
+      
+      def statusBody = """
+      {
+            "state": "failure",
+            "context":"RSpec",
+            "target_url": "${build_url}",
+            "description":"ERROR encountered during RSPEC"
+      }
+      """
+      updateStatus(api_url, statusBody)
+      
       throw all
       foundErrors=1
+      
+
     }
   }
 
@@ -246,6 +308,13 @@ node("hubot")
 * HELPER FUNCTIONS BELOW
 ***************************************************************************************************
 ***************************************************************************************************/
+
+def updateStatus(api_url, statusBody)
+{
+  def sha=sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+  def statusResponse = httpRequest authentication: 'github-cred', acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON', httpMode: 'POST', requestBody: statusBody, url: "${api_url}/repos/demo/Ruby-Books/statuses/${sha}"
+  echo "Status: ${statusResponse.status}\nContent: ${statusResponse.content}"
+}
 
 // Slurper method, using built in json
 @NonCPS
