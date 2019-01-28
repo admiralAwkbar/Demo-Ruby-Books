@@ -15,7 +15,7 @@ while read -r line; do
 done <<< "${existing_apps}"
 
 # Create Heroku App for this PR and push the code for initial deployment
-heroku apps:create ${app_name} --buildpack https://github.com/heroku/heroku-buildpack-ruby.git
+heroku apps:create ${app_name} --buildpack https://github.com/bundler/heroku-buildpack-bundler2.git
 git push heroku +HEAD:master
 
 # Run database migration
